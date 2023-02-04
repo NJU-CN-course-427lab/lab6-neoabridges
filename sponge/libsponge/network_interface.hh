@@ -5,6 +5,8 @@
 #include "tcp_over_ip.hh"
 #include "tun.hh"
 
+#include <list>
+#include <map>
 #include <optional>
 #include <queue>
 
@@ -31,6 +33,21 @@
 //! and learns or replies as necessary.
 class NetworkInterface {
   private:
+    // ARP entry struct 
+    struct ARP_Entry {
+        EthernetAddress eth_addr;
+        size_t ttl;
+    };
+    std::map<uint32_t, ARP_Entry> _arp_table{};
+
+    const size_t _arp_entry_default_ttl = 30 * 1000;// default 30s
+
+    std::map<uint32_t, size_t> _waiting_arp_response_ip_addr{};
+
+    const size_t _arp_response_default_ttl = 5 * 1000; //default 5s
+
+    std::list<std::pair<Address, InternetDatagram>> _waiting_arp_internet_datagrams{};
+
     //! Ethernet (known as hardware, network-access-layer, or link-layer) address of the interface
     EthernetAddress _ethernet_address;
 
@@ -64,4 +81,4 @@ class NetworkInterface {
     void tick(const size_t ms_since_last_tick);
 };
 
-#endif  // SPONGE_LIBSPONGE_NETWORK_INTERFACE_HH
+# endif // SPONGE_LIBSPONGE_NETWORK_INTERFACE_HH
